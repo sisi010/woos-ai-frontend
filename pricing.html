@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pricing - WoosAI</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .pricing-container {
+            max-width: 1200px;
+            margin: 120px auto 50px;
+            padding: 20px;
+        }
+        
+        .pricing-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        
+        .pricing-header h1 {
+            font-size: 3rem;
+            color: #1a1a1a;
+            margin-bottom: 15px;
+        }
+        
+        .pricing-header p {
+            font-size: 1.3rem;
+            color: #666;
+        }
+        
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .pricing-card {
+            background: #fff;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            position: relative;
+            transition: transform 0.3s;
+        }
+        
+        .pricing-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+        
+        .pricing-card.featured {
+            border: 3px solid #667eea;
+        }
+        
+        .popular-badge {
+            position: absolute;
+            top: -15px;
+            right: 30px;
+            background: #ffd700;
+            color: #1a1a1a;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+        
+        .plan-name {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 10px;
+        }
+        
+        .plan-price {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+        
+        .plan-price span {
+            font-size: 1.3rem;
+            color: #666;
+        }
+        
+        .plan-duration {
+            color: #999;
+            margin-bottom: 30px;
+        }
+        
+        .plan-features {
+            list-style: none;
+            margin: 30px 0;
+        }
+        
+        .plan-features li {
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+            color: #333;
+        }
+        
+        .plan-features li:before {
+            content: "✓";
+            color: #00cc00;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .btn-plan {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-free {
+            background: #f0f0f0;
+            color: #666;
+        }
+        
+        .btn-free:hover {
+            background: #e0e0e0;
+        }
+        
+        .btn-premium {
+            background: #667eea;
+            color: #fff;
+        }
+        
+        .btn-premium:hover {
+            background: #5568d3;
+            transform: scale(1.05);
+        }
+        
+        .current-plan {
+            background: #00cc00;
+            color: #fff;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 100px 20px;
+            font-size: 1.3rem;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo">
+                <h1><a href="index.html" style="color: #fff; text-decoration: none;">WoosAI</a></h1>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="#" id="navLink"></a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Pricing Section -->
+    <div class="pricing-container">
+        <div class="pricing-header">
+            <h1>Choose Your Plan</h1>
+            <p>Save up to 61% on AI API costs with WoosAI</p>
+        </div>
+
+        <div class="pricing-grid">
+            <!-- Free Plan -->
+            <div class="pricing-card">
+                <div class="plan-name">Free</div>
+                <div class="plan-price">$0<span>/month</span></div>
+                <div class="plan-duration">Forever free</div>
+                
+                <ul class="plan-features">
+                    <li>STARTER optimization (17% savings)</li>
+                    <li>Basic token compression</li>
+                    <li>Email support</li>
+                    <li>Community access</li>
+                    <li>1 year license</li>
+                </ul>
+                
+                <button id="btnFree" class="btn-plan btn-free" onclick="handleFreePlan()">
+                    Get Started Free
+                </button>
+            </div>
+
+            <!-- Premium Plan -->
+            <div class="pricing-card featured">
+                <div class="popular-badge">MOST POPULAR</div>
+                <div class="plan-name">Premium</div>
+                <div class="plan-price">$29<span>/month</span></div>
+                <div class="plan-duration">Billed monthly</div>
+                
+                <ul class="plan-features">
+                    <li>AUTO optimization (up to 61% savings)</li>
+                    <li>Advanced token compression</li>
+                    <li>Smart translation optimizer</li>
+                    <li>Priority support</li>
+                    <li>30 day license</li>
+                    <li>Real-time cost tracking</li>
+                    <li>Multiple API keys</li>
+                </ul>
+                
+                <button id="btnPremium" class="btn-plan btn-premium" onclick="handlePremiumPlan()">
+                    Upgrade to Premium
+                </button>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 50px; color: #666;">
+            <p>All plans include core WoosAI optimizer features</p>
+            <p style="margin-top: 10px;">Need enterprise solutions? <a href="#contact" style="color: #667eea;">Contact us</a></p>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="https://js.stripe.com/v3/"></script>
+    <script>
+        // Check login status
+        const loggedIn = isLoggedIn();
+        const userData = getUserData();
+        
+        // Update navigation
+        if (loggedIn) {
+            document.getElementById('navLink').innerHTML = '<a href="dashboard.html">Dashboard</a>';
+        } else {
+            document.getElementById('navLink').innerHTML = '<a href="login.html">Login</a>';
+        }
+        
+        // Update button states based on current plan
+        if (userData) {
+            const currentPlan = userData.plan;
+            
+            if (currentPlan === 'free') {
+                document.getElementById('btnFree').textContent = 'Current Plan';
+                document.getElementById('btnFree').classList.add('current-plan');
+                document.getElementById('btnFree').disabled = true;
+            } else if (currentPlan === 'premium') {
+                document.getElementById('btnPremium').textContent = 'Current Plan';
+                document.getElementById('btnPremium').classList.add('current-plan');
+                document.getElementById('btnPremium').disabled = true;
+                
+                document.getElementById('btnFree').textContent = 'Downgrade';
+            }
+        }
+        
+        // Handle Free Plan
+        async function handleFreePlan() {
+            if (!loggedIn) {
+                window.location.href = 'register.html';
+                return;
+            }
+            
+            try {
+                const result = await generateLicense('free', 365);
+                alert(`Free license generated!\n\nLicense Key: ${result.license.license_key}\n\nCheck your dashboard for details.`);
+                window.location.href = 'dashboard.html';
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+        
+        // Handle Premium Plan
+        async function handlePremiumPlan() {
+            if (!loggedIn) {
+                alert('Please login or create an account first');
+                window.location.href = 'register.html';
+                return;
+            }
+            
+            try {
+                // Create Stripe checkout session
+                const result = await createCheckoutSession('premium');
+                
+                // Redirect to Stripe Checkout
+                window.location.href = result.url;
+                
+            } catch (error) {
+                alert('Payment error: ' + error.message);
+            }
+        }
+        
+        // Check for payment success callback
+        const urlParams = new URLSearchParams(window.location.search);
+        const sessionId = urlParams.get('session_id');
+        
+        if (sessionId && loggedIn) {
+            // Verify payment and generate license
+            verifyPaymentSession(sessionId)
+                .then(result => {
+                    alert(`Payment successful!\n\nYour Premium license: ${result.license_key}\n\nCheck your dashboard for details.`);
+                    window.location.href = 'dashboard.html';
+                })
+                .catch(error => {
+                    console.error('Payment verification error:', error);
+                });
+        }
+    </script>
+</body>
+</html>

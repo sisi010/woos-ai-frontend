@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - WoosAI</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 120px auto 50px;
+            padding: 20px;
+        }
+        
+        .dashboard-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .dashboard-header h1 {
+            margin-bottom: 10px;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .dashboard-card {
+            background: #fff;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .dashboard-card h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        
+        .plan-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            background: #667eea;
+            color: #fff;
+            border-radius: 20px;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+        }
+        
+        .plan-badge.premium {
+            background: #ffd700;
+            color: #1a1a1a;
+        }
+        
+        .license-item {
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        
+        .license-key {
+            font-family: monospace;
+            background: #fff;
+            padding: 8px;
+            border-radius: 3px;
+            font-size: 0.9rem;
+            word-break: break-all;
+        }
+        
+        .status-active {
+            color: #00cc00;
+            font-weight: 600;
+        }
+        
+        .status-expired {
+            color: #cc0000;
+            font-weight: 600;
+        }
+        
+        .btn-logout {
+            background: #cc0000;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .btn-logout:hover {
+            background: #aa0000;
+        }
+        
+        .btn-upgrade {
+            background: #ffd700;
+            color: #1a1a1a;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-upgrade:hover {
+            background: #ffed4e;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #666;
+        }
+        
+        .info-value {
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo">
+                <h1><a href="index.html" style="color: #fff; text-decoration: none;">WoosAI</a></h1>
+            </div>
+            <ul class="nav-links">
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="pricing.html">Pricing</a></li>
+                <li><a href="#" onclick="logout(); return false;">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Dashboard -->
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <h1>Welcome, <span id="userName">User</span>!</h1>
+            <p>Manage your WoosAI account and licenses</p>
+        </div>
+
+        <div class="dashboard-grid">
+            <!-- Account Info -->
+            <div class="dashboard-card">
+                <h3>Account Information</h3>
+                <div id="accountInfo" class="loading">Loading...</div>
+            </div>
+
+            <!-- Plan Info -->
+            <div class="dashboard-card">
+                <h3>Current Plan</h3>
+                <div id="planInfo" class="loading">Loading...</div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="dashboard-card">
+                <h3>Quick Actions</h3>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <a href="pricing.html" class="btn-upgrade">Upgrade Plan</a>
+                    <button onclick="generateFreeLicense()" class="btn" style="background: #667eea; color: #fff; border: none; padding: 10px; border-radius: 5px; cursor: pointer;">
+                        Generate Free License
+                    </button>
+                    <button onclick="logout()" class="btn-logout">Logout</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Licenses Section -->
+        <div class="dashboard-card">
+            <h3>My Licenses</h3>
+            <div id="licensesSection" class="loading">Loading licenses...</div>
+        </div>
+
+        <!-- Payments Section -->
+        <div class="dashboard-card">
+            <h3>Payment History</h3>
+            <div id="paymentsSection" class="loading">Loading payments...</div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script>
+        // Require authentication
+        if (!requireAuth()) {
+            // Will redirect to login
+        }
+
+        // Load dashboard data
+        async function loadDashboard() {
+            try {
+                // Get user data from localStorage
+                const userData = getUserData();
+                
+                if (userData) {
+                    // Display user name
+                    document.getElementById('userName').textContent = userData.name || userData.email;
+                    
+                    // Display account info
+                    document.getElementById('accountInfo').innerHTML = `
+                        <div class="info-row">
+                            <span class="info-label">Email:</span>
+                            <span class="info-value">${userData.email}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">User ID:</span>
+                            <span class="info-value">${userData.id.substring(0, 8)}...</span>
+                        </div>
+                    `;
+                    
+                    // Display plan info
+                    const planBadgeClass = userData.plan === 'premium' ? 'premium' : '';
+                    document.getElementById('planInfo').innerHTML = `
+                        <div style="margin-bottom: 15px;">
+                            <span class="plan-badge ${planBadgeClass}">${userData.plan}</span>
+                        </div>
+                        ${userData.plan === 'free' ? `
+                            <p style="color: #666; margin-bottom: 15px;">Upgrade to Premium for unlimited features!</p>
+                            <a href="pricing.html" class="btn-upgrade">View Plans</a>
+                        ` : `
+                            <p style="color: #666;">You have access to all premium features!</p>
+                        `}
+                    `;
+                }
+                
+                // Load licenses
+                await loadLicenses();
+                
+                // Load payments
+                await loadPayments();
+                
+            } catch (error) {
+                console.error('Dashboard load error:', error);
+                if (error.message.includes('Token')) {
+                    logout();
+                }
+            }
+        }
+
+        // Load licenses
+        async function loadLicenses() {
+            try {
+                const result = await getMyLicenses();
+                const licensesSection = document.getElementById('licensesSection');
+                
+                if (result.licenses && result.licenses.length > 0) {
+                    licensesSection.innerHTML = result.licenses.map(license => {
+                        const isActive = license.status === 'active';
+                        const expiryDate = new Date(license.expires_at).toLocaleDateString();
+                        
+                        return `
+                            <div class="license-item">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                                    <span class="plan-badge ${license.plan === 'premium' ? 'premium' : ''}">${license.plan}</span>
+                                    <span class="status-${isActive ? 'active' : 'expired'}">${license.status.toUpperCase()}</span>
+                                </div>
+                                <div class="license-key">${license.license_key}</div>
+                                <p style="margin-top: 10px; font-size: 0.9rem; color: #666;">
+                                    Expires: ${expiryDate}
+                                </p>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    licensesSection.innerHTML = `
+                        <div class="empty-state">
+                            <p>No licenses yet. Generate your first free license!</p>
+                            <button onclick="generateFreeLicense()" class="btn" style="margin-top: 15px; background: #667eea; color: #fff; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+                                Generate Free License
+                            </button>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('licensesSection').innerHTML = `
+                    <div class="empty-state">Failed to load licenses</div>
+                `;
+            }
+        }
+
+        // Load payments
+        async function loadPayments() {
+            try {
+                const result = await getMyPayments();
+                const paymentsSection = document.getElementById('paymentsSection');
+                
+                if (result.payments && result.payments.length > 0) {
+                    paymentsSection.innerHTML = result.payments.map(payment => {
+                        const date = new Date(payment.created_at).toLocaleDateString();
+                        
+                        return `
+                            <div class="license-item">
+                                <div style="display: flex; justify-content: space-between;">
+                                    <div>
+                                        <strong>${payment.plan.toUpperCase()} Plan</strong>
+                                        <p style="color: #666; font-size: 0.9rem;">${date}</p>
+                                    </div>
+                                    <div style="text-align: right;">
+                                        <strong>$${payment.amount.toFixed(2)}</strong>
+                                        <p style="color: ${payment.status === 'completed' ? '#00cc00' : '#666'}; font-size: 0.9rem;">
+                                            ${payment.status.toUpperCase()}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    paymentsSection.innerHTML = `
+                        <div class="empty-state">No payment history</div>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('paymentsSection').innerHTML = `
+                    <div class="empty-state">Failed to load payments</div>
+                `;
+            }
+        }
+
+        // Generate free license
+        async function generateFreeLicense() {
+            try {
+                const result = await generateLicense('free', 365);
+                alert(`Free license generated!\n\n${result.license.license_key}`);
+                await loadLicenses();
+            } catch (error) {
+                alert('Failed to generate license: ' + error.message);
+            }
+        }
+
+        // Load dashboard on page load
+        loadDashboard();
+    </script>
+</body>
+</html>
