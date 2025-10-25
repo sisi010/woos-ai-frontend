@@ -222,7 +222,6 @@
     </div>
 
     <script src="js/api.js"></script>
-    <script src="https://js.stripe.com/v3/"></script>
     <script>
         // Check login status
         const loggedIn = isLoggedIn();
@@ -268,40 +267,41 @@
             }
         }
         
-        // Handle Premium Plan
+        // Handle Premium Plan - LEMON SQUEEZY VERSION
         async function handlePremiumPlan() {
-            if (!loggedIn) {
-                alert('Please login or create an account first');
-                window.location.href = 'register.html';
+            // Get email
+            const email = prompt('Enter your email address for Premium upgrade:');
+            
+            if (!email) {
+                alert('Email is required');
                 return;
             }
             
+            // Validate email
+            if (!isValidEmail(email)) {
+                alert('Please enter a valid email address');
+                return;
+            }
+            
+            // Get license key
+            const licenseKey = localStorage.getItem('woosai_license_key') || 'WOOSAI-FREE-TEMP';
+            
+            // Save email
+            localStorage.setItem('woosai_email', email);
+            
             try {
-                // Create Stripe checkout session
-                const result = await createCheckoutSession('premium');
-                
-                // Redirect to Stripe Checkout
-                window.location.href = result.url;
-                
+                // Call upgradeToPremium from payment-integration.js (in api.js)
+                await upgradeToPremium(email, licenseKey);
             } catch (error) {
                 alert('Payment error: ' + error.message);
+                console.error('Payment error:', error);
             }
         }
         
-        // Check for payment success callback
-        const urlParams = new URLSearchParams(window.location.search);
-        const sessionId = urlParams.get('session_id');
-        
-        if (sessionId && loggedIn) {
-            // Verify payment and generate license
-            verifyPaymentSession(sessionId)
-                .then(result => {
-                    alert(`Payment successful!\n\nYour Premium license: ${result.license_key}\n\nCheck your dashboard for details.`);
-                    window.location.href = 'dashboard.html';
-                })
-                .catch(error => {
-                    console.error('Payment verification error:', error);
-                });
+        // Email validation
+        function isValidEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
         }
     </script>
 </body>
