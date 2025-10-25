@@ -206,3 +206,183 @@ function clearMessages() {
     if (errorElement) errorElement.style.display = 'none';
     if (successElement) successElement.style.display = 'none';
 }
+
+// ============================================
+// LEMON SQUEEZY PAYMENT INTEGRATION
+// ============================================
+
+const BACKEND_URL = 'https://woosai-backend-production.up.railway.app';
+
+/**
+ * Upgrade to Premium via Lemon Squeezy
+ */
+async function upgradeToPremium(email, licenseKey) {
+    try {
+        // Show loading
+        showPaymentLoading('Creating checkout session...');
+        
+        // Call backend
+        const response = await fetch(`${BACKEND_URL}/api/payment/create-checkout`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                email: email,
+                license_key: licenseKey
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success && data.url) {
+            // Redirect to Lemon Squeezy
+            window.location.href = data.url;
+        } else {
+            throw new Error(data.detail || 'Failed to create checkout');
+        }
+        
+    } catch (error) {
+        hidePaymentLoading();
+        alert('Payment Error: ' + error.message);
+        console.error('Payment error:', error);
+    }
+}
+
+/**
+ * Handle Premium Plan button click
+ */
+async function handlePremiumPlan() {
+    // Get email
+    const email = prompt('Enter your email address for Premium upgrade:');
+    
+    if (!email) {
+        alert('Email is required');
+        return;
+    }
+    
+    // Validate email
+    if (!isValidEmail(email)) {
+        alert('Please enter a valid email address');
+        return;
+    }
+    
+    // Get or create license key
+    const licenseKey = localStorage.getItem('woosai_license_key') || 'WOOSAI-FREE-TEMP';
+    
+    // Save email
+    localStorage.setItem('woosai_email', email);
+    
+    // Upgrade
+    await upgradeToPremium(email, licenseKey);
+}
+
+/**
+ * Validate email
+ */
+function isValidEmail(email) {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+}
+
+/**
+ * Show payment loading
+ */
+function showPaymentLoading(message = 'Processing...') {
+    const overlay = document.createElement('div');
+    overlay.id = 'payment-loading';
+    overlay.innerHTML = `
+        <div style="
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 99999;
+            backdrop-filter: blur(5px);
+        ">
+            <div style="
+                background: white;
+                padding: 40px;
+                border-radius: 15px;
+                text-align: center;
+                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+                max-width: 400px;
+            ">
+                <div style="
+                    border: 5px solid #f3f3f3;
+                    border-top: 5px solid #667eea;
+                    border-radius: 50%;
+                    width: 60px;
+                    height: 60px;
+                    animation: spin 1s linear infinite;
+                    margin: 0 auto 20px;
+                "></div>
+                <h3 style="margin: 0 0 10px 0; color: #333; font-size: 1.5em;">
+                    ${message}
+                </h3>
+                <p style="margin: 0; color: #666;">
+                    Redirecting to Lemon Squeezy...
+                </p>
+            </div>
+        </div>
+        <style>
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        </style>
+    `;
+    document.body.appendChild(overlay);
+}
+
+/**
+ * Hide payment loading
+ */
+function hidePaymentLoading() {
+    const overlay = document.getElementById('payment-loading');
+    if (overlay) {
+        overlay.remove();
+    }
+}
+
+/**
+ * Get Premium price
+ */
+async function getPremiumPrice() {
+    try {
+        const response = await fetch(`${BACKEND_URL}/api/payment/get-price`);
+        const data = await response.json();
+        
+        if (data.success) {
+            return data;
+        }
+        
+        return { price: 9.0, currency: 'USD', interval: 'month' };
+        
+    } catch (error) {
+        console.error('Failed to get price:', error);
+        return { price: 9.0, currency: 'USD', interval: 'month' };
+    }
+}
+
+// Initialize pricing on page load
+if (window.location.pathname.includes('pricing.html')) {
+    document.addEventListener('DOMContentLoaded', async () => {
+        const priceInfo = await getPremiumPrice();
+        
+        // Update price displays
+        const priceElements = document.querySelectorAll('.plan-price.premium-price, .premium-price');
+        priceElements.forEach(el => {
+            if (el.textContent.includes('$')) {
+                el.innerHTML = `$${priceInfo.price}<small>/${priceInfo.interval}</small>`;
+            }
+        });
+    });
+}
+
+console.log('✅ Payment integration loaded');
