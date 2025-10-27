@@ -49,6 +49,49 @@
             border-color: #667eea;
         }
         
+        .form-group small {
+            display: block;
+            margin-top: 5px;
+            font-size: 0.85rem;
+            color: #666;
+        }
+        
+        .password-requirements {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 5px;
+            font-size: 0.85rem;
+        }
+        
+        .requirement {
+            padding: 3px 0;
+            color: #666;
+        }
+        
+        .requirement.valid {
+            color: #00cc00;
+        }
+        
+        .requirement.invalid {
+            color: #cc0000;
+        }
+        
+        .requirement:before {
+            content: "○ ";
+            margin-right: 5px;
+        }
+        
+        .requirement.valid:before {
+            content: "✓ ";
+            font-weight: bold;
+        }
+        
+        .requirement.invalid:before {
+            content: "✗ ";
+            font-weight: bold;
+        }
+        
         .btn-submit {
             width: 100%;
             padding: 12px;
@@ -64,6 +107,11 @@
         
         .btn-submit:hover {
             background: #5568d3;
+        }
+        
+        .btn-submit:disabled {
+            background: #ccc;
+            cursor: not-allowed;
         }
         
         .auth-footer {
@@ -141,7 +189,13 @@
 
             <div class="form-group">
                 <label for="password">Password</label>
-                <input type="password" id="password" name="password" required minlength="6">
+                <input type="password" id="password" name="password" required minlength="7">
+                <div class="password-requirements" id="passwordRequirements">
+                    <div class="requirement" id="req-length">At least 7 characters</div>
+                    <div class="requirement" id="req-letter">Contains letters (a-z, A-Z)</div>
+                    <div class="requirement" id="req-number">Contains numbers (0-9)</div>
+                    <div class="requirement" id="req-special">Contains special characters (!@#$%^&*)</div>
+                </div>
             </div>
 
             <div class="form-group">
@@ -149,7 +203,7 @@
                 <input type="password" id="confirmPassword" name="confirmPassword" required>
             </div>
 
-            <button type="submit" class="btn-submit">Sign Up</button>
+            <button type="submit" class="btn-submit" id="submitBtn">Sign Up</button>
         </form>
 
         <div class="auth-footer">
@@ -159,6 +213,42 @@
 
     <script src="js/api.js"></script>
     <script>
+        // Password validation function
+        function validatePassword(password) {
+            const requirements = {
+                length: password.length >= 7,
+                letter: /[a-zA-Z]/.test(password),
+                number: /[0-9]/.test(password),
+                special: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+            };
+            
+            return requirements;
+        }
+        
+        // Update password requirements display
+        function updatePasswordRequirements(password) {
+            const requirements = validatePassword(password);
+            
+            // Update each requirement
+            document.getElementById('req-length').className = 
+                'requirement ' + (requirements.length ? 'valid' : 'invalid');
+            document.getElementById('req-letter').className = 
+                'requirement ' + (requirements.letter ? 'valid' : 'invalid');
+            document.getElementById('req-number').className = 
+                'requirement ' + (requirements.number ? 'valid' : 'invalid');
+            document.getElementById('req-special').className = 
+                'requirement ' + (requirements.special ? 'valid' : 'invalid');
+            
+            // Check if all requirements are met
+            return requirements.length && requirements.letter && 
+                   requirements.number && requirements.special;
+        }
+        
+        // Real-time password validation
+        document.getElementById('password').addEventListener('input', function() {
+            updatePasswordRequirements(this.value);
+        });
+        
         // Handle register form submission
         document.getElementById('registerForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -176,9 +266,11 @@
                 return;
             }
             
-            // Validate password length
-            if (password.length < 6) {
-                showError('Password must be at least 6 characters');
+            // Validate password strength
+            const requirements = validatePassword(password);
+            if (!requirements.length || !requirements.letter || 
+                !requirements.number || !requirements.special) {
+                showError('Password does not meet security requirements');
                 return;
             }
             
