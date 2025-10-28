@@ -133,19 +133,19 @@ async function getMyLicenses() {
 
 // Payment APIs
 async function createCheckoutSession(plan) {
-    return await apiRequest('/payments/create-checkout-session', 'POST', {
+    return await apiRequest('/payment/create-checkout-session', 'POST', {
         plan
     }, true);
 }
 
 async function verifyPaymentSession(session_id) {
-    return await apiRequest('/payments/verify-session', 'POST', {
+    return await apiRequest('/payment/verify-session', 'POST', {
         session_id
     }, true);
 }
 
 async function getMyPayments() {
-    return await apiRequest('/payments/my-payments', 'GET', null, true);
+    return await apiRequest('/payment/my-payments', 'GET', null, true);
 }
 
 // Check if user is logged in
