@@ -132,22 +132,30 @@
         .error {
             background: #ffe0e0;
             color: #cc0000;
-            padding: 10px;
+            padding: 12px;
             border-radius: 5px;
             margin-bottom: 20px;
             text-align: center;
+            font-weight: 500;
+            border: 1px solid #ffcccc;
         }
         
         .success {
             background: #e0ffe0;
             color: #00cc00;
-            padding: 10px;
+            padding: 12px;
             border-radius: 5px;
             margin-bottom: 20px;
             text-align: center;
+            font-weight: 500;
+            border: 1px solid #ccffcc;
         }
         
-        #error-message, #success-message {
+        #error-message {
+            display: none;
+        }
+        
+        #success-message {
             display: none;
         }
     </style>
@@ -173,8 +181,8 @@
             <p>Join WoosAI today</p>
         </div>
 
-        <div id="error-message"></div>
-        <div id="success-message"></div>
+        <div id="error-message" class="error"></div>
+        <div id="success-message" class="success"></div>
 
         <form id="registerForm">
             <div class="form-group">
@@ -284,7 +292,23 @@
                 }, 1000);
                 
             } catch (error) {
-                showError(error.message || 'Registration failed. Please try again.');
+                // Display user-friendly error messages
+                let errorMessage = 'Registration failed. Please try again.';
+                
+                if (error.message) {
+                    // Check for common error messages
+                    if (error.message.includes('already registered') || error.message.includes('Email already')) {
+                        errorMessage = 'This email is already registered. Please use a different email or login.';
+                    } else if (error.message.includes('Password must')) {
+                        errorMessage = error.message;
+                    } else if (error.message.includes('Invalid email')) {
+                        errorMessage = 'Please enter a valid email address.';
+                    } else {
+                        errorMessage = error.message;
+                    }
+                }
+                
+                showError(errorMessage);
             }
         });
 
