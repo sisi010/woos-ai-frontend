@@ -145,7 +145,17 @@ async function verifyPaymentSession(session_id) {
 }
 
 async function getMyPayments() {
-    return await apiRequest('/payments/my-payments', 'GET', null, true);
+    try {
+        return await apiRequest('/payments/my-payments', 'GET', null, true);
+    } catch (error) {
+        // If 401 (not authenticated), return empty payments instead of throwing error
+        if (error.message && (error.message.includes('401') || error.message.includes('Unauthorized'))) {
+            console.log('User not authenticated - returning empty payments');
+            return { payments: [], total: 0 };
+        }
+        // For other errors, throw as normal
+        throw error;
+    }
 }
 
 // Check if user is logged in
