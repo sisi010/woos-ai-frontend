@@ -65,7 +65,10 @@ async function apiRequest(endpoint, method = 'GET', data = null, requireAuth = f
 
         return result;
     } catch (error) {
-        console.error('API Request Error:', error);
+        // Only log unexpected errors (not 401)
+        if (!error.status || error.status !== 401) {
+            console.error('API Request Error:', error);
+        }
         throw error;
     }
 }
