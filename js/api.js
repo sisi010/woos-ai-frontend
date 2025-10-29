@@ -58,7 +58,9 @@ async function apiRequest(endpoint, method = 'GET', data = null, requireAuth = f
         const result = await response.json();
 
         if (!response.ok) {
-            throw new Error(result.error || 'Request failed');
+            const error = new Error(result.detail || result.error || 'Request failed');
+            error.status = response.status;
+            throw error;
         }
 
         return result;
@@ -149,7 +151,7 @@ async function getMyPayments() {
         return await apiRequest('/payments/my-payments', 'GET', null, true);
     } catch (error) {
         // If 401 (not authenticated), return empty payments instead of throwing error
-        if (error.message && (error.message.includes('401') || error.message.includes('Unauthorized'))) {
+        if (error.status === 401 || error.message.includes('Unauthorized')) {
             console.log('User not authenticated - returning empty payments');
             return { payments: [], total: 0 };
         }
