@@ -237,7 +237,7 @@ async function upgradeToPremium(email, licenseKey) {
         showPaymentLoading('Creating checkout session...');
         
         // Call backend
-        const response = await fetch(`${BACKEND_URL}/api/payment/create-checkout`, {
+        const response = await fetch(`${BACKEND_URL}/api/payments/create-checkout`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -370,7 +370,7 @@ function hidePaymentLoading() {
  */
 async function getPremiumPrice() {
     try {
-        const response = await fetch(`${BACKEND_URL}/api/payment/get-price`);
+        const response = await fetch(`${BACKEND_URL}/api/payments/get-price`);
         const data = await response.json();
         
         if (data.success) {
